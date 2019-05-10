@@ -60,12 +60,10 @@
         DB_USER : student
         DB_PASSWORD : student@1
 
-    - name : edit context.xml
-      blockinfile :
-        path : "{{TOMCAT_DIR}}/apache-tomcat-9.0.19/conf/context.xml"
-        block : |
-          <Resource name="jdbc/TestDB" auth="Container" type="javax.sql.DataSource" maxTotal="100" maxIdle="30" maxWaitMillis="10000" username="{{DB_USER}}" password="{{DB_PASSWORD}}" driverClassName="com.mysql.jdbc.Driver" url="jdbc:mysql://{{DB_HOST}}:3306/{{DB_SCHEMA}}"/>
-        insertbefore : "</Context>"
+    - name : copy context.xml.j2 using template
+      template :
+        src : /var/lib/jenkins/files/context.xml.j2
+        dest : "{{TOMCAT_DIR}}/apache-tomcat-9.0.19/conf/context.xml"
         
     - name : check the running status of tomcat
       shell : ps -ef | grep tomcat | grep -v grep
