@@ -81,3 +81,30 @@
       args :
         chdir : "{{TOMCAT_DIR}}/apache-tomcat-9.0.19/bin"
       when : output.rc != 0
+
+- name : create schema and tables for student
+  hosts : DB
+  become : yes
+  tasks :
+    - name : install mysql_python
+      yum :
+        name : MySQL-python
+        state : latest
+        
+    - name : define DB variables
+      set_fact :
+        DB_HOST : mariadb-server
+        DB_SCHEMA : studentapp
+        DB_USER : student
+        DB_PASSWORD : student@1
+
+    - name : template the studentapp.sql
+      template :
+        src : /var/lib/jenkins/files/studentapp.sql.j2
+        dest : /tmp/studentapp.sql
+
+    - name : run studentapp.sql
+      mysql_db :
+        state : import
+        name : all
+        target : /tmp/studentapp.sql
