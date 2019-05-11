@@ -133,7 +133,7 @@
         name : MySQL-python
         state : latest
         
-    - name : define DB variables
+    - name : define DEV DB variables
       tags :
         - DEV
       set_fact :
@@ -142,7 +142,7 @@
         DB_USER : student
         DB_PASSWORD : student@1
 
-    - name : define DB variables
+    - name : define QA DB variables
       tags :
         - QA
       set_fact :
@@ -151,7 +151,7 @@
         DB_USER : student
         DB_PASSWORD : student@1
 
-    - name : define DB variables
+    - name : define PROD DB variables
       tags :
         - PROD
       set_fact :
@@ -161,6 +161,8 @@
         DB_PASSWORD : student@1
 
     - name : template the studentapp.sql
+      tags :
+        - always
       template :
         src : /var/lib/jenkins/files/studentapp.sql.j2
         dest : /tmp/studentapp.sql
