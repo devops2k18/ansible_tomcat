@@ -141,6 +141,7 @@
         DB_SCHEMA : studentdevapp
         DB_USER : student
         DB_PASSWORD : student@1
+        APP_HOST : student-dev-app-server
 
     - name : define QA DB variables
       tags :
@@ -150,6 +151,7 @@
         DB_SCHEMA : studentqaapp
         DB_USER : student
         DB_PASSWORD : student@1
+        APP_HOST : student-qa-app-server
 
     - name : define PROD DB variables
       tags :
@@ -159,6 +161,7 @@
         DB_SCHEMA : studentprodapp
         DB_USER : student
         DB_PASSWORD : student@1
+        APP_HOST : student-prod-app-server
 
     - name : template the studentapp.sql
       tags :
