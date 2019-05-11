@@ -1,5 +1,5 @@
 - name : app-server
-  hosts : DEV
+  hosts : "{{envi}}"
   become : yes
   vars :
     - USERNAME : tomcat
@@ -8,15 +8,21 @@
     - MYSQL_CONNECTOR : https://github.com/devops2k18/DevOpsDecember/raw/master/APPSTACK/mysql-connector-java-5.1.40.jar
   tasks :
     - name : install java
+      tags :
+        - always
       yum :
         name : java
         state : latest
 
     - name : create a user for tomcat
+      tags :
+        - always
       user :
         name : "{{USERNAME}}"
 
     - name : create a directory for tomcat
+      tags :
+        - always
       file :
         path : "{{TOMCAT_DIR}}"
         owner : "{{USERNAME}}"
@@ -25,6 +31,8 @@
         state : directory
 
     - name : download  and extract tomcat
+      tags :
+        - always
       unarchive :
         src : https://www-us.apache.org/dist/tomcat/tomcat-9/v9.0.19/bin/apache-tomcat-9.0.19.tar.gz
         dest : "{{TOMCAT_DIR}}"
@@ -32,12 +40,16 @@
       become_user : "{{USERNAME}}"
 
     - name : find all files from webapps directory
+      tags :
+        - always
       find :
         paths : "{{TOMCAT_DIR}}/apache-tomcat-9.0.19/webapps"
         file_type : any
       register : findout
 
     - name : remove all files
+      tags :
+        - always
       file :
         path : "{{item.path}}"
         state : absent
@@ -45,6 +57,8 @@
         "{{findout.files}}"
 
     - name : download student.war
+      tags :
+        - always
       get_url :
         url : "{{item.URL}}"
         dest : "{{item.dest}}"
@@ -54,29 +68,57 @@
       become_user : "{{USERNAME}}"
 
     - name : define DB variables
+      tags :
+        - DEV
       set_fact :
         DB_HOST : mariadb-server
-        DB_SCHEMA : studentapp
+        DB_SCHEMA : studentdevapp
+        DB_USER : student
+        DB_PASSWORD : student@1
+
+    - name : define DB variables
+      tags :
+        - QA
+      set_fact :
+        DB_HOST : mariadb-server
+        DB_SCHEMA : studentqaapp
+        DB_USER : student
+        DB_PASSWORD : student@1
+
+    - name : define DB variables
+      tags :
+        - PROD
+      set_fact :
+        DB_HOST : mariadb-server
+        DB_SCHEMA : studentprodapp
         DB_USER : student
         DB_PASSWORD : student@1
 
     - name : copy context.xml.j2 using template
+      tags :
+        - always
       template :
         src : /var/lib/jenkins/files/context.xml.j2
         dest : "{{TOMCAT_DIR}}/apache-tomcat-9.0.19/conf/context.xml"
         
     - name : check the running status of tomcat
+      tags :
+        - always
       shell : ps -ef | grep tomcat | grep -v grep
       register : output
       ignore_errors : True
 
     - name : restart tomcat
+      tags :
+        - always
       shell : nohup sh shutdown.sh && nohup sh startup.sh
       args :
         chdir : "{{TOMCAT_DIR}}/apache-tomcat-9.0.19/bin"
       when : output.rc == 0
 
     - name : start the app-server
+      tags :
+        - always
       shell : nohup sh startup.sh
       args :
         chdir : "{{TOMCAT_DIR}}/apache-tomcat-9.0.19/bin"
@@ -92,9 +134,29 @@
         state : latest
         
     - name : define DB variables
+      tags :
+        - DEV
       set_fact :
         DB_HOST : mariadb-server
-        DB_SCHEMA : studentapp
+        DB_SCHEMA : studentdevapp
+        DB_USER : student
+        DB_PASSWORD : student@1
+
+    - name : define DB variables
+      tags :
+        - QA
+      set_fact :
+        DB_HOST : mariadb-server
+        DB_SCHEMA : studentqaapp
+        DB_USER : student
+        DB_PASSWORD : student@1
+
+    - name : define DB variables
+      tags :
+        - PROD
+      set_fact :
+        DB_HOST : mariadb-server
+        DB_SCHEMA : studentprodapp
         DB_USER : student
         DB_PASSWORD : student@1
 
@@ -104,6 +166,8 @@
         dest : /tmp/studentapp.sql
 
     - name : run studentapp.sql
+      tags :
+        - always
       mysql_db :
         state : import
         name : all
